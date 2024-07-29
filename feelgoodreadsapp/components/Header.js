@@ -21,7 +21,7 @@ export default function Header() {
     <header className="bg-blue-500 text-white p-4">
       <nav className="flex justify-between items-center">
         <Link href="/">
-          <a className="text-2xl font-bold">FeelGoodReads</a>
+          <span className="text-2xl font-bold">FeelGoodReads</span>
         </Link>
         <div>
           {user ? (
@@ -36,7 +36,7 @@ export default function Header() {
             </div>
           ) : (
             <Link href="/login">
-              <a className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Login</a>
+              <span className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Login</span>
             </Link>
           )}
         </div>
