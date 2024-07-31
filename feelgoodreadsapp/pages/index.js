@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 
 export default function Home() {
   return (
-      <div className="text-center">
+      <div className="text-center bg-[#fefffb]">
         <h1 className="text-3xl md:text-5xl font-bold my-8">How are you feeling today?</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
           <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Sadness</button>
