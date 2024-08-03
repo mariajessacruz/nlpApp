@@ -28,10 +28,20 @@ export default function Layout({ children }) {
     };
   }, [router]);
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      alert('Error logging out: ' + error.message);
+    } else {
+      setSession(null); // Clear the session state after logout
+      router.push('/'); // Redirect to the homepage or any other page after logout
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       {session ? (
-        <UserProfileHeader user={session.user} />
+        <UserProfileHeader user={session.user} onLogout={handleLogout} />
       ) : (
         isHome ? <HomeHeader /> : <Header />
       )}

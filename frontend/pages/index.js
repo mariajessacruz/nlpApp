@@ -1,37 +1,60 @@
-// pages/index.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
+import { supabase } from '../utils/supabaseClient';
+import PopularBooks from '../components/PopularBooks';
+import { fetchPopularBooks } from '../utils/googleBooksApi';
 
 export default function Home() {
+  const [selectedEmotion, setSelectedEmotion] = useState(null);
+  const [popularBooks, setPopularBooks] = useState([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Fetch popular books on initial load
+    const loadPopularBooks = async () => {
+      const books = await fetchPopularBooks();
+      setPopularBooks(books);
+    };
+    loadPopularBooks();
+  }, []);
+
+  const handleEmotionClick = async (emotionId) => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // Save the selected emotion in localStorage
+    localStorage.setItem('selectedEmotion', emotionId);
+
+    if (!session) {
+      // User is not logged in, redirect to signup/login page
+      router.push('/login'); // Adjust this route to your login/signup page
+    } else {
+      // User is logged in, redirect to user's homepage
+      router.push('/homepage');
+    }
+  };
+
   return (
       <div className="text-center bg-[#fefffb]">
         <h1 className="text-3xl md:text-5xl font-bold my-8">How are you feeling today?</h1>
+
+        {/* Emotion Buttons */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
-          <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Sadness</button>
-          <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Joy</button>
-          <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Love</button>
-          <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Anger</button>
-          <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Fear</button>
-          <button className="bg-green-200 text-green-800 py-2 px-4 rounded">Surprise</button>
+          {[{id: 1, name: 'Sadness'}, {id: 2, name: 'Joy'}, {id: 3, name: 'Love'}, {id: 4, name: 'Anger'}, {id: 5, name: 'Fear'}, {id: 6, name: 'Surprise'}].map((emotion) => (
+            <button
+              key={emotion.id}
+              onClick={() => handleEmotionClick(emotion.id)}
+              className="bg-green-200 text-green-800 py-2 px-4 rounded"
+            >
+              {emotion.name}
+            </button>
+          ))}
         </div>
-        <div className="my-8">
-          <input
-            type="text"
-            placeholder="Search by title, author or keyword"
-            className="w-full max-w-lg px-4 py-2 border border-gray-300 rounded"
-          />
-        </div>
+
+        {/* Popular Books Section */}
         <section className="my-8">
-          <h2 className="text-2xl font-bold mb-4">Discover Your Perfect Match Book</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-            <img src="/path/to/book1.jpg" alt="Book 1" />
-            <img src="/path/to/book2.jpg" alt="Book 2" />
-            {/* Add more books as needed */}
-          </div>
+          <PopularBooks books={popularBooks} />
         </section>
-        <div className="my-8">
-          <button className="bg-green-700 text-white py-2 px-4 rounded">Free Trial For 30 Days</button>
-        </div>
       </div>
   );
 }
