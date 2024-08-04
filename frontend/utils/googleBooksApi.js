@@ -1,15 +1,23 @@
-// frontend/utils/googleBooksApi.js
+import axios from 'axios';
 
-// Function to fetch books by query
-export async function fetchBooksByQuery(query) {
-  const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`);
-  const data = await response.json();
-  return data.items || [];
+// Function to fetch books by query and emotion
+export async function fetchBooksByQuery(query, emotionId) {
+  try {
+    const response = await axios.post('/api/predict', { query, emotion: emotionId });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    return [];
+  }
 }
 
 // Function to fetch popular books
 export async function fetchPopularBooks() {
-  const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=subject:popular&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`);
-  const data = await response.json();
-  return data.items || [];
+  try {
+    const response = await axios.get(`https://www.googleapis.com/books/v1/volumes?q=subject:popular&key=${process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY}`);
+    return response.data.items || [];
+  } catch (error) {
+    console.error('Error fetching popular books:', error);
+    return [];
+  }
 }
