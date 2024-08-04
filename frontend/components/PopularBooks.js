@@ -1,5 +1,3 @@
-// frontend/components/PopularBooks.js
-
 import React, { useEffect, useState } from 'react';
 import { fetchPopularBooks } from '../utils/googleBooksApi';
 
@@ -15,17 +13,14 @@ export default function PopularBooks() {
   }, []);
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Popular Books</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
-        {books.map((book, index) => (
-          <div key={index} className="bg-gray-200 text-gray-800 py-2 px-4 rounded">
-            <img src={book.volumeInfo.imageLinks?.thumbnail || '/default-book.png'} alt={book.volumeInfo.title} />
-            <h3>{book.volumeInfo.title}</h3>
-            <p>{book.volumeInfo.authors?.join(', ')}</p>
-          </div>
-        ))}
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
+      {books.map((book, index) => (
+        <div key={index} className="bg-white text-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+          <img src={book.volumeInfo.imageLinks?.thumbnail || '/default-book.png'} alt={book.volumeInfo.title} className="mb-4 w-32 h-40 object-cover"/>
+          <h3 className="text-center font-semibold">{book.volumeInfo.title}</h3>
+          <p className="text-center">{book.volumeInfo.authors?.join(', ')}</p>
+        </div>
+      ))}
     </div>
   );
 }

@@ -25,11 +25,11 @@ export default function EmotionBasedRecommendations({ emotions }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
         {books.length > 0 ? (
           books.map((book, index) => (
-            <div key={index} className="bg-gray-200 text-gray-800 py-2 px-4 rounded">
-              <img src={book.thumbnail} alt={book.title} />
-              <h3>{book.title}</h3>
-              <p>{book.author}</p>
-              <p>{book.category}</p>
+            <div key={index} className="bg-gray-200 text-gray-800 py-2 px-4 rounded flex flex-col items-center">
+              <img src={book.thumbnail} alt={book.title} className="mb-2" />
+              <h3 className="text-center">{book.title}</h3>
+              <p className="text-center">{book.author}</p>
+              <p className="text-center">{book.category}</p>
             </div>
           ))
         ) : (

@@ -19,11 +19,7 @@ def hybrid_recommendation():
         # Load user profiles
         user_profiles = load_user_profiles(use_real_model=False)
 
-        # Traceback (most recent call last):
-  File "/workspaces/nlpApp/backend/app.py", line 2, in <module>
-    from api.hybrid_recommendation import hybrid_recommendation_bp
-  File "/workspaces/nlpApp/backend/api/hybrid_recommendation.py", line 5, in <module>
-    import requestsCheck if user_profiles are loaded correctly
+        # Check if user_profiles are loaded correctly
         print(f"User profiles loaded: {len(user_profiles)} profiles found.")
 
         # Find books reviewed by users with similar emotions

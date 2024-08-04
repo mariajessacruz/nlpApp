@@ -17,17 +17,43 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+input[type="text"] {
+  color: #000; /* Set the text color to black */
+  padding: 10px; /* Add some padding for better appearance */
+  border: 1px solid #ccc; /* Add a border for better visibility */
+  border-radius: 5px; /* Add some border radius for better appearance */
+  font-size: 16px; /* Adjust the font size */
+  background-color: #fff; /* Ensure the background color is white */
+}
+
+input[type="text"]::placeholder {
+  color: #999; /* Set a color for the placeholder text */
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  color: black; /* Ensure input text is black */
+}
+
+.search-input::placeholder {
+  color: #999; /* Placeholder text color */
 }
