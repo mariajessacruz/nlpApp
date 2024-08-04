@@ -6,9 +6,27 @@ import { fetchPopularBooks } from '../utils/googleBooksApi';
 
 export default function Home() {
   const [popularBooks, setPopularBooks] = useState([]);
+  const [userProfile, setUserProfile] = useState('guest');
   const router = useRouter();
 
   useEffect(() => {
+    const checkUserStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        // Fetch user profile status from the backend
+        const response = await fetch(`/backend/api/get_user_status?user_id=${session.user.id}`);
+        const result = await response.json();
+
+        if (result.success) {
+          setUserProfile(result.user_profile);
+        }
+      }
+    };
+
+    // Fetch user status on initial load
+    checkUserStatus();
+
     // Fetch popular books on initial load
     const loadPopularBooks = async () => {
       const books = await fetchPopularBooks();
@@ -50,7 +68,9 @@ export default function Home() {
 
   return (
     <div className="text-center bg-[#fefffb]">
-      <h1 className="text-3xl md:text-5xl font-bold my-8">How are you feeling today?</h1>
+      <h1 className="text-3xl md:text-5xl font-bold my-8">
+        {userProfile === 'guest' ? 'Welcome, Guest!' : `Welcome, ${userProfile.name}!`}
+      </h1>
 
       {/* Emotion Buttons */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">

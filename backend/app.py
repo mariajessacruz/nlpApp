@@ -1,53 +1,92 @@
 from flask import Flask, request, jsonify
 import json
+from supabase import create_client, Client
+import os
 
 app = Flask(__name__)
 
-# Load user profile data from JSON
-with open('data/user_profiles.json') as f:
-    user_profiles = json.load(f)
+# Initialize Supabase client
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# In-memory storage for emotions (this could be a database in a real application)
-user_emotions = {}
+# Load user profile data from JSON
+try:
+    with open('backend/data/user_profiles.json') as f:
+        user_profiles = json.load(f)
+except FileNotFoundError:
+    user_profiles = {}
+
+# Endpoint to check user status
+@app.route('/backend/api/get_user_status', methods=['GET'])
+def get_user_status():
+    user_id = request.args.get('user_id')
+    
+    # Check in JSON file first
+    if user_id and any(profile.get('user_id') == user_id for profile in user_profiles):
+        user_profile = next(profile for profile in user_profiles if profile.get('user_id') == user_id)
+        return jsonify(success=True, source='json', user_profile=user_profile), 200
+    
+    # Check in Supabase if not found in JSON
+    response = supabase.from('user_profiles').select('*').eq('user_id', user_id).execute()
+    if response.status_code == 200 and response.data:
+        user_profile = response.data[0]
+        return jsonify(success=True, source='supabase', user_profile=user_profile), 200
+    
+    return jsonify(success=False, message="User not found"), 404
 
 # Endpoint to save selected emotion
-@app.route('/api/save_emotion', methods=['POST'])
+@app.route('/backend/api/save_emotion', methods=['POST'])
 def save_emotion():
     user_id = request.json.get('user_id')
     emotion_id = request.json.get('emotion_id')
-    print(f"Received sdvasdv ID: {emotion_id} for user {user_id}")  
+    
     if user_id and emotion_id is not None:
-        if user_id not in user_emotions:
-            user_emotions[user_id] = []
-        user_emotions[user_id].append(emotion_id)
-        print(f"Received  sasdvas emotion ID: {emotion_id} for user {user_id}")  # Log the emotion ID in the backend
-        return jsonify(success=True, message=f"Emotion ID {emotion_id} received and saved."), 200
+        # Save emotion to Supabase
+        data = {
+            'user_id': user_id,
+            'emotion_id': emotion_id
+        }
+        response = supabase.from('user_emotion_preferences').insert(data).execute()
+        
+        if response.status_code == 201:
+            print(f"Received emotion ID: {emotion_id} for user {user_id}")  # Log the emotion ID in the backend
+            return jsonify(success=True, message=f"Emotion ID {emotion_id} received and saved."), 200
+        else:
+            return jsonify(success=False, message="Error saving emotion to Supabase."), 400
 
     return jsonify(success=False, message="Invalid data"), 400
 
 # Endpoint to get book recommendations based on selected emotions
-@app.route('/api/get_books_by_emotion', methods=['POST'])
+@app.route('/backend/api/get_books_by_emotion', methods=['POST'])
 def get_books_by_emotion():
     emotion_ids = request.json.get('emotion_ids', [])
     user_id = request.json.get('user_id')
-    print(f"Received  sfasv sdfadv emotion ID: {emotion_id} for user {user_id}")  
     
     if not emotion_ids or not user_id:
         return jsonify(success=False, books=[]), 400
 
-    recommended_books = fetch_recommendations_from_json(user_id, emotion_ids)
+    # Fetch recommendations from both JSON and Supabase
+    recommended_books = fetch_recommendations(user_id, emotion_ids)
     return jsonify(success=True, books=recommended_books), 200
 
-def fetch_recommendations_from_json(user_id, emotion_ids):
-    print(f"Received emsvasda otion ID: {emotion_ids} for user {user_id}")  
-    
+def fetch_recommendations(user_id, emotion_ids):
     recommended_books = []
-    
+
+    # Fetch from JSON file
     for profile in user_profiles:
         if profile['user_id'] != user_id:
-            for review in profile['reviews']:
-                if any(emotion in emotion_ids for emotion in review['emotions']):
+            for review in profile.get('reviews', []):
+                if any(emotion in emotion_ids for emotion in review.get('emotions', [])):
                     recommended_books.append(review['book_id'])
+    
+    # Fetch from Supabase
+    response = supabase.from('user_reviews').select('book_id, emotions').neq('user_id', user_id).execute()
+    if response.status_code == 200:
+        supabase_reviews = response.data
+        for review in supabase_reviews:
+            if any(emotion in emotion_ids for emotion in review.get('emotions', [])):
+                recommended_books.append(review['book_id'])
 
     return list(set(recommended_books))
 

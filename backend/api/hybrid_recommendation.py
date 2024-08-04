@@ -2,18 +2,32 @@ from flask import Blueprint, request, jsonify
 import json
 import random
 import requests
+from supabase import create_client, Client
+import os
+
+# Initialize Supabase client
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 hybrid_recommendation_bp = Blueprint('hybrid_recommendation', __name__)
 
 def load_user_profiles(use_real_model=False):
     if use_real_model:
-        return load_profiles_from_model()
+        return load_profiles_from_supabase()
     else:
         with open('backend/data/user_profiles.json', 'r') as file:
             return json.load(file)
 
+def load_profiles_from_supabase():
+    response = supabase.from('user_profiles').select('*').execute()
+    if response.status_code == 200:
+        return response.data
+    else:
+        return []
+
 def fetch_book_from_google_api(book_id):
-    GOOGLE_BOOKS_API_KEY = 'your_google_books_api_key_here'
+    GOOGLE_BOOKS_API_KEY = os.getenv('GOOGLE_BOOKS_API_KEY')
     url = f"https://www.googleapis.com/books/v1/volumes?q={book_id}&key={GOOGLE_BOOKS_API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
