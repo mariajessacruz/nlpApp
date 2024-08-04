@@ -28,7 +28,7 @@ def get_user_status():
         return jsonify(success=True, source='json', user_profile=user_profile), 200
     
     # Check in Supabase if not found in JSON
-    response = supabase.from('user_profiles').select('*').eq('user_id', user_id).execute()
+    response = supabase.table('user_profiles').select('*').eq('user_id', user_id).execute()
     if response.status_code == 200 and response.data:
         user_profile = response.data[0]
         return jsonify(success=True, source='supabase', user_profile=user_profile), 200
@@ -47,7 +47,7 @@ def save_emotion():
             'user_id': user_id,
             'emotion_id': emotion_id
         }
-        response = supabase.from('user_emotion_preferences').insert(data).execute()
+        response = supabase.table('user_emotion_preferences').insert(data).execute()
         
         if response.status_code == 201:
             print(f"Received emotion ID: {emotion_id} for user {user_id}")  # Log the emotion ID in the backend
@@ -81,7 +81,7 @@ def fetch_recommendations(user_id, emotion_ids):
                     recommended_books.append(review['book_id'])
     
     # Fetch from Supabase
-    response = supabase.from('user_reviews').select('book_id, emotions').neq('user_id', user_id).execute()
+    response = supabase.table('user_reviews').select('book_id, emotions').neq('user_id', user_id).execute()
     if response.status_code == 200:
         supabase_reviews = response.data
         for review in supabase_reviews:
