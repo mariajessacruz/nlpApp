@@ -69,17 +69,6 @@ export default function Homepage() {
         <div className="mt-8">
           <button className="bg-black text-white py-2 px-6 rounded-full">Free Trial For 30 Days</button>
         </div>
-        <div className="my-8">
-          <h2 className="text-xl font-bold">Get Our Free App</h2>
-          <div className="flex justify-center">
-            <a href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">
-              <img src="/images/google-play-badge.png" alt="Google Play" className="w-32 h-auto mr-4" />
-            </a>
-            <a href="https://www.apple.com/app-store/" target="_blank" rel="noopener noreferrer">
-              <img src="/images/app-store-badge.png" alt="App Store" className="w-32 h-auto" />
-            </a>
-          </div>
-        </div>
       </div>
     </Layout>
   );
