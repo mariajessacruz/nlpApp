@@ -7,7 +7,7 @@
           "emotions": ["Sadness", "Surprise"]
         },
         {
-          "book_id": "The_Great_Gatsby",
+          "book_id": "Without Their Permission",
           "emotions": ["Love", "Joy"]
         }
       ]
@@ -16,11 +16,11 @@
       "user_id": 2,
       "reviews": [
         {
-          "book_id": "To_Kill_a_Mockingbird",
+          "book_id": "To Kill a Mockingbird",
           "emotions": ["Sadness", "Anger"]
         },
         {
-          "book_id": "Pride_and_Prejudice",
+          "book_id": "Pride and Prejudice",
           "emotions": ["Love"]
         },
         {
