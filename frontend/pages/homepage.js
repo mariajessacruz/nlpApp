@@ -1,101 +1,86 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import EmotionBasedRecommendations from '../components/EmotionBasedRecommendations';
-import { supabase } from '../utils/supabaseClient';
+import { fetchBooksByQuery } from '../utils/googleBooksApi';
+import PopularBooks from '../components/PopularBooks';
 
 export default function Homepage() {
-  const [selectedEmotions, setSelectedEmotions] = useState([]);
-  const [userSession, setUserSession] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
-  useEffect(() => {
-    const storedEmotions = JSON.parse(localStorage.getItem('selectedEmotions')) || [];
-    setSelectedEmotions(storedEmotions);
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUserSession(session);
-
-      if (session) {
-        const { data, error } = await supabase
-          .from('user_emotion_preferences')
-          .select('emotion_id')
-          .eq('user_id', session.user.id);
-
-        if (error) {
-          console.error('Error fetching user emotions:', error);
-        } else if (data.length > 0) {
-          const userEmotions = data.map((record) => record.emotion_id);
-          setSelectedEmotions(userEmotions);
-          localStorage.setItem('selectedEmotions', JSON.stringify(userEmotions)); // Sync with local storage
-        }
-      }
-    };
-    checkSession();
-  }, []);
-
-  const handleEmotionClick = async (emotionId) => {
-    const emotionAlreadySelected = selectedEmotions.includes(emotionId);
-
-    let updatedEmotions;
-    if (emotionAlreadySelected) {
-      updatedEmotions = selectedEmotions.filter((id) => id !== emotionId);
-    } else {
-      updatedEmotions = [...selectedEmotions, emotionId];
-    }
-
-    setSelectedEmotions(updatedEmotions);
-    localStorage.setItem('selectedEmotions', JSON.stringify(updatedEmotions)); // Save to local storage
-
-    if (userSession) {
-      const { error } = await supabase
-        .from('user_emotion_preferences')
-        .upsert(
-          updatedEmotions.map((emotion_id) => ({
-            user_id: userSession.user.id,
-            emotion_id,
-          })),
-          { onConflict: ['user_id', 'emotion_id'] }
-        );
-
-      if (error) {
-        console.error('Error saving emotions:', error);
-      }
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== '') {
+      const books = await fetchBooksByQuery(searchQuery);
+      setSearchResults(books);
     }
   };
 
+  useEffect(() => {
+    if (searchQuery === '') {
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
+
   return (
-    <div className="text-center bg-[#fefffb]">
-      <h1 className="text-4xl md:text-6xl font-bold my-8">How are you feeling today?</h1>
-
-      <div className="grid grid-cols-3 gap-4 my-8">
-        {['Sadness', 'Joy', 'Love', 'Anger', 'Fear', 'Surprise'].map((emotion, index) => (
-          <button
-            key={index}
-            onClick={() => handleEmotionClick(index + 1)}
-            className={`py-2 px-4 rounded ${selectedEmotions.includes(index + 1) ? 'bg-green-800 text-white' : 'bg-green-200 text-green-800'}`}
-          >
-            {emotion}
-          </button>
-        ))}
+    <Layout>
+      <div className="text-center bg-[#fefffb]">
+        <h1 className="text-3xl md:text-5xl font-bold my-8">How are you feeling today?</h1>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
+          {[{ id: 1, name: 'Sadness' }, { id: 2, name: 'Joy' }, { id: 3, name: 'Love' }, { id: 4, name: 'Anger' }, { id: 5, name: 'Fear' }, { id: 6, name: 'Surprise' }].map((emotion) => (
+            <button key={emotion.id} className="bg-green-200 text-green-800 py-2 px-4 rounded">
+              {emotion.name}
+            </button>
+          ))}
+        </div>
+        <p className="text-gray-700 mb-4">
+          Enter the title, author, or keyword of a book you recently read and enjoyed, or any book that interests you. The more titles, authors, or keywords you provide, the more accurately we can tailor our recommendations to your preferences.
+        </p>
+        <form onSubmit={handleSearchSubmit} className="search-container my-8">
+          <input
+            type="text"
+            placeholder="SEARCH BY TITLE, AUTHOR OR KEYWORD"
+            className="search-input w-full p-2 border rounded text-black text-center"
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
+        </form>
+        <h2 className="text-2xl font-bold my-8">Discover Your Perfect Match Book</h2>
+        {searchResults.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 my-8">
+            {searchResults.map((book, index) => (
+              <div key={index} className="bg-white text-gray-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+                <img
+                  src={book.volumeInfo?.imageLinks?.thumbnail || '/default-book.png'}
+                  alt={book.volumeInfo?.title || 'No title available'}
+                  className="mb-4 w-32 h-40 object-cover"
+                />
+                <h3 className="text-center font-semibold">{book.volumeInfo?.title || 'No title available'}</h3>
+                <p className="text-center">{book.volumeInfo?.authors?.join(', ') || 'Unknown Author'}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <PopularBooks />
+        )}
+        <div className="mt-8">
+          <button className="bg-black text-white py-2 px-6 rounded-full">Free Trial For 30 Days</button>
+        </div>
+        <div className="my-8">
+          <h2 className="text-xl font-bold">Get Our Free App</h2>
+          <div className="flex justify-center">
+            <a href="https://play.google.com/store" target="_blank" rel="noopener noreferrer">
+              <img src="/images/google-play-badge.png" alt="Google Play" className="w-32 h-auto mr-4" />
+            </a>
+            <a href="https://www.apple.com/app-store/" target="_blank" rel="noopener noreferrer">
+              <img src="/images/app-store-badge.png" alt="App Store" className="w-32 h-auto" />
+            </a>
+          </div>
+        </div>
       </div>
-
-      <div className="my-8">
-        <input
-          type="text"
-          placeholder="SEARCH BY TITLE, AUTHOR OR KEYWORD"
-          className="w-full py-2 px-4 border rounded text-black placeholder-gray-500"
-        />
-      </div>
-
-      {selectedEmotions.length > 0 && (
-        <section className="my-8">
-          <EmotionBasedRecommendations emotions={selectedEmotions} />
-        </section>
-      )}
-
-      <button className="bg-black text-white py-2 px-4 rounded mt-8">
-        Free Trial For 30 Days
-      </button>
-    </div>
+    </Layout>
   );
 }

@@ -46,14 +46,23 @@ input[type="text"]::placeholder {
   color: #999; /* Set a color for the placeholder text */
 }
 
-.search-input {
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  padding: 0.5rem;
+}
+
+.search-input {
+  width: 80%;
+  padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  color: black; /* Ensure input text is black */
+  border-radius: 5px;
+  font-size: 16px;
+  text-align: center;
 }
 
 .search-input::placeholder {
-  color: #999; /* Placeholder text color */
+  text-align: center;
+  color: #999;
 }
