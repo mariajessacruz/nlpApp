@@ -1,3 +1,6 @@
+Flask
+requests
+gunicorn
 ipykernel==6.29.5
 ipython==8.26.0
 isoduration==20.11.0
